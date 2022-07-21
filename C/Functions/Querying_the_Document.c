@@ -23,24 +23,26 @@ char**** get_document(char* text)
     int i_paragraph = 0;
     int i_sentence = 0;
     int i_word = 0;
+    int len = strlen(text);
 
     doc = (char****)malloc(sizeof(char***));
     doc[0] = (char***)malloc(sizeof(char**));
     doc[0][0] = (char**)malloc(sizeof(char*));
 
     char* word = NULL;
+    int i_char = 0;
 
-    for (char* s = text; *s; ++s)
+    for (int i = 0; i < len; ++i)
     {
-        if (*s == ' ' || *s == '.')
+        if (text[i] == ' ' || text[i] == '.')
         {
-            fprintf(stderr, "add word p%d s%d w%d: %.*s\n", i_paragraph, i_sentence, i_word, (int)(s - word), word);
+            word[i_char] = '\0';
             doc[i_paragraph][i_sentence][i_word] = word;
 
             i_word++;
             doc[i_paragraph][i_sentence] = (char**)realloc(doc[i_paragraph][i_sentence], sizeof(char*) * (i_word + 1));
 
-            if (*s == '.' && s[1] != '\n')
+            if (text[i] == '.' && text[i] != '\n')
             {
                 i_word = 0;
                 i_sentence++;
@@ -49,17 +51,17 @@ char**** get_document(char* text)
                 doc[i_paragraph][i_sentence] = (char**)malloc(sizeof(char*));
             }
 
-            *s = 0;
             word = NULL;
+            i_char = 0;
         }
 
-        else if (*s == '\n')
+        else if (text[i] == '\n')
         {
-            *s = 0;
             word = NULL;
 
             i_word = 0;
             i_sentence = 0;
+            i_char = 0;
             i_paragraph++;
 
             doc = (char****)realloc(doc, sizeof(char***) * (i_paragraph + 1));
@@ -68,11 +70,9 @@ char**** get_document(char* text)
         }
         else
         {
-            if (word == NULL)
-            {
-                word = s;
-                //printf("new word: %s\n", word);
-            }
+            i_char++;
+            word = (char*)realloc(word, i_char * sizeof(char));
+            word[i_char - 1] = text[i];
         }
     }
 
@@ -80,7 +80,7 @@ char**** get_document(char* text)
 }
 
 
-char* get_input_text() {	
+char* get_input_text() {
     int paragraph_count;
     scanf("%d", &paragraph_count);
 
@@ -94,7 +94,7 @@ char* get_input_text() {
             strcat(doc, "\n");
     }
 
-    char* returnDoc = (char*)malloc((strlen (doc)+1) * (sizeof(char)));
+    char* returnDoc = (char*)malloc((strlen(doc) + 1) * (sizeof(char)));
     strcpy(returnDoc, doc);
     return returnDoc;
 }
@@ -106,12 +106,12 @@ void print_word(char* word) {
 void print_sentence(char** sentence) {
     int word_count;
     scanf("%d", &word_count);
-    for(int i = 0; i < word_count; i++){
+    for (int i = 0; i < word_count; i++) {
         printf("%s", sentence[i]);
-        if( i != word_count - 1)
+        if (i != word_count - 1)
             printf(" ");
     }
-} 
+}
 
 void print_paragraph(char*** paragraph) {
     int sentence_count;
@@ -122,7 +122,7 @@ void print_paragraph(char*** paragraph) {
     }
 }
 
-int main() 
+int main()
 {
     char* text = get_input_text();
     char**** document = get_document(text);
@@ -134,26 +134,26 @@ int main()
         int type;
         scanf("%d", &type);
 
-        if (type == 3){
+        if (type == 3) {
             int k, m, n;
             scanf("%d %d %d", &k, &m, &n);
             char* word = kth_word_in_mth_sentence_of_nth_paragraph(document, k, m, n);
             print_word(word);
         }
 
-        else if (type == 2){
+        else if (type == 2) {
             int k, m;
             scanf("%d %d", &k, &m);
             char** sentence = kth_sentence_in_mth_paragraph(document, k, m);
             print_sentence(sentence);
         }
 
-        else{
+        else {
             int k;
             scanf("%d", &k);
             char*** paragraph = kth_paragraph(document, k);
             print_paragraph(paragraph);
         }
         printf("\n");
-    }     
+    }
 }
